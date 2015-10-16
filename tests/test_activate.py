@@ -2,7 +2,6 @@ from __future__ import print_function, absolute_import
 
 import os
 from os.path import dirname, join
-import shutil
 import stat
 import subprocess
 
