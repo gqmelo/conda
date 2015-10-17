@@ -645,7 +645,36 @@ def test_CONDA_DEFAULT_ENV():
             # assert stdout == 'root'
             # assert stderr == 'Error: too many arguments.\n'
 
+
+@pytest.mark.slow
+def test_activate_root():
+    for shell in shells:
+        with TemporaryDirectory(prefix='envs', dir=dirname(__file__)) as envs:
+            activate, deactivate, conda = _write_entry_points(envs)
+            commands = (command_setup + """
+            source {activate} root
+            printf $PATH
+            """).format(envs=envs, deactivate=deactivate, activate=activate)
+
+            stdout, stderr = run_in(commands, shell)
+            assert stdout == ROOTPATH
+            assert stderr == 'discarding {root_dir}/bin from PATH\nprepending {root_dir}/bin to PATH\n'.format(root_dir=root_dir)
+
+
+@pytest.mark.slow
+def test_activate_root_deactivate():
+    for shell in shells:
+        with TemporaryDirectory(prefix='envs', dir=dirname(__file__)) as envs:
+            activate, deactivate, conda = _write_entry_points(envs)
+            commands = (command_setup + """
+            source {activate} root 2> /dev/null
+            source {deactivate}
+            printf $PATH
+            """).format(envs=envs, deactivate=deactivate, activate=activate)
+
+            stdout, stderr = run_in(commands, shell)
+            assert stdout == PATH
+            assert stderr == 'discarding {root_dir}/bin from PATH\n'.format(root_dir=root_dir)
+
 # TODO:
 # - Test activating an env by name
-# - Test activating "root"
-# - Test activating "root" and then deactivating
